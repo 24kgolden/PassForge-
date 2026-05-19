@@ -1,818 +1,318 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PassForge — Gestor de Contraseñas</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg:       #0a0a0f;
-    --surface:  #111118;
-    --card:     #16161f;
-    --border:   #1e1e2e;
-    --accent:   #00f5a0;
-    --accent2:  #00c8f5;
-    --danger:   #f54040;
-    --warn:     #f5c440;
-    --text:     #e8e8f0;
-    --muted:    #5a5a7a;
-    --glow: 0 0 30px rgba(0,245,160,0.15);
-  }
-
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* Grid background */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(0,245,160,0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,245,160,0.03) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Ambient glow */
-  body::after {
-    content: '';
-    position: fixed;
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(0,245,160,0.06) 0%, transparent 70%);
-    top: -200px; right: -200px;
-    pointer-events: none; z-index: 0;
-  }
-
-  .app { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
-
-  /* ── HEADER ── */
-  header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 32px 0 40px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 40px;
-  }
-
-  .logo {
-    display: flex; align-items: center; gap: 12px;
-  }
-  .logo-icon {
-    width: 42px; height: 42px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px;
-    box-shadow: var(--glow);
-  }
-  .logo-text { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.5px; }
-  .logo-text span { color: var(--accent); }
-
-  .api-status {
-    display: flex; align-items: center; gap: 8px;
-    font-family: 'Space Mono', monospace;
-    font-size: 0.75rem; color: var(--muted);
-  }
-  .status-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--warn);
-    animation: pulse 2s infinite;
-  }
-  .status-dot.online { background: var(--accent); }
-
-  @keyframes pulse {
-    0%,100% { opacity:1; } 50% { opacity:0.4; }
-  }
-
-  /* ── TABS ── */
-  .tabs {
-    display: flex; gap: 4px;
-    margin-bottom: 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 4px;
-    width: fit-content;
-  }
-  .tab-btn {
-    padding: 10px 24px;
-    border-radius: 9px;
-    border: none; cursor: pointer;
-    font-family: 'Syne', sans-serif;
-    font-size: 0.9rem; font-weight: 600;
-    color: var(--muted);
-    background: transparent;
-    transition: all 0.2s;
-  }
-  .tab-btn.active {
-    background: var(--card);
-    color: var(--text);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  }
-
-  /* ── SECTIONS ── */
-  .section { display: none; }
-  .section.active { display: block; animation: fadeIn 0.3s ease; }
-
-  @keyframes fadeIn { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
-
-  /* ── GENERATOR CARD ── */
-  .gen-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-  @media(max-width:700px) { .gen-grid { grid-template-columns: 1fr; } }
-
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 28px;
-  }
-  .card-title {
-    font-size: 0.75rem; font-weight: 600; letter-spacing: 2px;
-    text-transform: uppercase; color: var(--muted);
-    margin-bottom: 20px;
-  }
-
-  /* Password display */
-  .pwd-display {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px 16px;
-    margin-bottom: 20px;
-    position: relative;
-  }
-  .pwd-text {
-    font-family: 'Space Mono', monospace;
-    font-size: 1.1rem;
-    word-break: break-all;
-    line-height: 1.6;
-    color: var(--accent);
-    min-height: 28px;
-    letter-spacing: 1px;
-  }
-  .pwd-placeholder { color: var(--muted); font-style: italic; }
-
-  .pwd-actions {
-    display: flex; gap: 8px; margin-top: 12px;
-  }
-
-  /* Strength bar */
-  .strength-bar {
-    height: 4px; border-radius: 2px;
-    background: var(--border);
-    margin-top: 12px; overflow: hidden;
-  }
-  .strength-fill {
-    height: 100%; border-radius: 2px;
-    transition: width 0.4s ease, background 0.4s ease;
-    width: 0%;
-  }
-  .strength-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.7rem; color: var(--muted);
-    margin-top: 6px; text-align: right;
-  }
-
-  /* Buttons */
-  .btn {
-    padding: 10px 20px;
-    border-radius: 8px; border: none; cursor: pointer;
-    font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 600;
-    transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
-  }
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    color: #000;
-    box-shadow: 0 0 20px rgba(0,245,160,0.25);
-  }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 0 30px rgba(0,245,160,0.4); }
-  .btn-ghost {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
-  .btn-danger {
-    background: rgba(245,64,64,0.1);
-    border: 1px solid rgba(245,64,64,0.3);
-    color: var(--danger);
-  }
-  .btn-danger:hover { background: rgba(245,64,64,0.2); }
-  .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
-  .btn-full { width: 100%; justify-content: center; }
-
-  /* Controls */
-  label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
-
-  input[type="text"], input[type="number"], select, textarea {
-    width: 100%;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    font-family: 'Syne', sans-serif;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-    outline: none;
-  }
-  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-  textarea { resize: vertical; min-height: 70px; }
-
-  .range-wrap { display: flex; align-items: center; gap: 12px; }
-  input[type="range"] {
-    flex: 1; height: 4px; border-radius: 2px;
-    background: var(--border);
-    appearance: none;
-    cursor: pointer;
-  }
-  input[type="range"]::-webkit-slider-thumb {
-    appearance: none;
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 8px rgba(0,245,160,0.6);
-    cursor: pointer;
-  }
-  .range-val {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.9rem; color: var(--accent);
-    min-width: 32px; text-align: center;
-  }
-
-  /* Toggles */
-  .toggle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .toggle-item {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 14px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; cursor: pointer;
-    transition: border-color 0.2s;
-    user-select: none;
-  }
-  .toggle-item.on { border-color: var(--accent); }
-  .toggle-label { font-size: 0.85rem; }
-  .toggle-switch {
-    width: 36px; height: 20px; border-radius: 10px;
-    background: var(--border); position: relative; transition: background 0.2s;
-  }
-  .toggle-item.on .toggle-switch { background: var(--accent); }
-  .toggle-switch::after {
-    content: '';
-    position: absolute; top: 2px; left: 2px;
-    width: 16px; height: 16px; border-radius: 50%;
-    background: #fff; transition: transform 0.2s;
-  }
-  .toggle-item.on .toggle-switch::after { transform: translateX(16px); }
-
-  .form-group { margin-bottom: 16px; }
-
-  /* ── VAULT ── */
-  .vault-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 24px; gap: 12px; flex-wrap: wrap;
-  }
-  .search-input {
-    flex: 1; min-width: 200px;
-    padding: 10px 14px 10px 36px;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; color: var(--text);
-    font-family: 'Syne', sans-serif; font-size: 0.9rem; outline: none;
-  }
-  .search-input:focus { border-color: var(--accent); }
-  .search-wrap { position: relative; flex: 1; min-width: 200px; }
-  .search-icon {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
-    color: var(--muted); font-size: 14px;
-  }
-
-  /* Password cards */
-  .pwd-list { display: flex; flex-direction: column; gap: 12px; }
-  .pwd-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px;
-    display: flex; align-items: center; gap: 16px;
-    transition: border-color 0.2s;
-  }
-  .pwd-card:hover { border-color: rgba(0,245,160,0.3); }
-  .pwd-card-icon {
-    width: 40px; height: 40px; border-radius: 10px;
-    background: linear-gradient(135deg, rgba(0,245,160,0.15), rgba(0,200,245,0.15));
-    border: 1px solid rgba(0,245,160,0.2);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 18px; flex-shrink: 0;
-  }
-  .pwd-card-info { flex: 1; min-width: 0; }
-  .pwd-card-name { font-weight: 700; font-size: 0.95rem; }
-  .pwd-card-meta { font-size: 0.75rem; color: var(--muted); margin-top: 2px; font-family: 'Space Mono', monospace; }
-  .pwd-card-value {
-    font-family: 'Space Mono', monospace;
-    font-size: 0.85rem; color: var(--accent);
-    background: var(--surface); border: 1px solid var(--border);
-    padding: 4px 10px; border-radius: 6px;
-    max-width: 200px; overflow: hidden;
-    text-overflow: ellipsis; white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .pwd-card-value.hidden { filter: blur(6px); transition: filter 0.2s; cursor: pointer; }
-  .pwd-card-value.hidden:hover { filter: blur(0); }
-  .pwd-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-  /* Category badge */
-  .badge {
-    display: inline-block;
-    padding: 2px 8px; border-radius: 4px;
-    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;
-    background: rgba(0,245,160,0.1);
-    border: 1px solid rgba(0,245,160,0.2);
-    color: var(--accent);
-  }
-
-  /* Empty state */
-  .empty-state {
-    text-align: center; padding: 60px 20px;
-    color: var(--muted);
-  }
-  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
-  .empty-state p { font-size: 0.95rem; }
-
-  /* Notifications */
-  .notif-area { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-  .notif {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 14px 20px;
-    font-size: 0.85rem; min-width: 240px;
-    animation: slideIn 0.3s ease;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .notif.success { border-color: rgba(0,245,160,0.4); }
-  .notif.error   { border-color: rgba(245,64,64,0.4); }
-
-  @keyframes slideIn { from { transform: translateX(60px); opacity:0; } to { transform: translateX(0); opacity:1; } }
-
-  /* Separator */
-  .sep { height: 1px; background: var(--border); margin: 20px 0; }
-
-  /* Stats bar */
-  .stats-bar {
-    display: flex; gap: 20px; flex-wrap: wrap;
-    margin-bottom: 32px;
-  }
-  .stat-item {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 16px 20px; flex: 1; min-width: 120px;
-  }
-  .stat-val { font-size: 1.6rem; font-weight: 800; color: var(--accent); line-height: 1; }
-  .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
-
-  .copy-success { color: var(--accent) !important; }
-
-  select option { background: var(--surface); color: var(--text); }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PassForge — Gestor de Contraseñas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Clash+Display:wght@400;500;600;700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
-<div class="notif-area" id="notifArea"></div>
+  <!-- ░░░ CANVAS LAYERS ░░░ -->
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="noise-overlay" aria-hidden="true"></div>
+  <div class="vignette"      aria-hidden="true"></div>
 
-<div class="app">
-  <header>
-    <div class="logo">
-      <div class="logo-icon">🔐</div>
-      <div class="logo-text">Pass<span>Forge</span></div>
-    </div>
-    <div class="api-status">
-      <div class="status-dot" id="statusDot"></div>
-      <span id="statusText">Modo local activo</span>
-    </div>
-  </header>
+  <!-- ░░░ NOTIFICATIONS ░░░ -->
+  <div class="notif-stack" id="notifStack" role="status" aria-live="polite"></div>
 
-  <!-- STATS -->
-  <div class="stats-bar" id="statsBar">
-    <div class="stat-item"><div class="stat-val" id="statTotal">0</div><div class="stat-label">Contraseñas guardadas</div></div>
-    <div class="stat-item"><div class="stat-val" id="statCategories">0</div><div class="stat-label">Categorías</div></div>
-    <div class="stat-item"><div class="stat-val" id="statStrong">0</div><div class="stat-label">Contraseñas fuertes</div></div>
-  </div>
+  <!-- ░░░ APP SHELL ░░░ -->
+  <div class="shell">
 
-  <!-- TABS -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('generator')">⚡ Generar</button>
-    <button class="tab-btn" onclick="switchTab('vault')">🗄️ Bóveda</button>
-  </div>
-
-  <!-- GENERATOR SECTION -->
-  <div class="section active" id="sec-generator">
-    <div class="gen-grid">
-      <!-- Left: output + config -->
-      <div>
-        <div class="card">
-          <div class="card-title">Contraseña generada</div>
-          <div class="pwd-display">
-            <div class="pwd-text pwd-placeholder" id="pwdOutput">Haz clic en "Generar" →</div>
-            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
-            <div class="strength-label" id="strengthLabel">—</div>
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-top">
+        <div class="brand">
+          <div class="brand-mark">
+            <svg viewBox="0 0 32 32" fill="none">
+              <rect width="32" height="32" rx="8" fill="url(#g1)"/>
+              <path d="M10 14v-2a6 6 0 0 1 12 0v2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+              <rect x="7" y="14" width="18" height="12" rx="4" fill="#fff" fill-opacity=".15" stroke="#fff" stroke-width="1.5"/>
+              <circle cx="16" cy="20" r="2" fill="#fff"/>
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+                  <stop offset="0%" stop-color="#1dffa0"/>
+                  <stop offset="100%" stop-color="#00b4ff"/>
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
-          <div class="pwd-actions">
-            <button class="btn btn-primary" onclick="generatePassword()">⚡ Generar</button>
-            <button class="btn btn-ghost" id="copyBtn" onclick="copyPassword()">📋 Copiar</button>
+          <div class="brand-text">
+            <span class="brand-name">PassForge</span>
+            <span class="brand-ver">v2.0</span>
           </div>
         </div>
 
-        <!-- Save card -->
-        <div class="card" style="margin-top:20px;">
-          <div class="card-title">Guardar contraseña</div>
-          <div class="form-group">
-            <label>Nombre / Servicio</label>
-            <input type="text" id="saveName" placeholder="ej. Gmail, Netflix, GitHub…">
-          </div>
-          <div class="form-group">
-            <label>Categoría</label>
-            <select id="saveCategory">
-              <option value="General">General</option>
-              <option value="Trabajo">Trabajo</option>
-              <option value="Social">Redes Sociales</option>
-              <option value="Finanzas">Finanzas</option>
-              <option value="Entretenimiento">Entretenimiento</option>
-              <option value="Educacion">Educación</option>
-              <option value="Otro">Otro</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Notas (opcional)</label>
-            <textarea id="saveNotes" placeholder="Email asociado, notas extra…"></textarea>
-          </div>
-          <button class="btn btn-primary btn-full" onclick="savePassword()">💾 Guardar en bóveda</button>
+        <nav class="nav" role="navigation">
+          <button class="nav-item active" data-tab="generator" aria-label="Generador">
+            <span class="nav-icon">⚡</span>
+            <span class="nav-label">Generador</span>
+            <span class="nav-pip"></span>
+          </button>
+          <button class="nav-item" data-tab="vault" aria-label="Bóveda">
+            <span class="nav-icon">🗄️</span>
+            <span class="nav-label">Bóveda</span>
+            <span class="nav-badge" id="vaultBadge">0</span>
+          </button>
+          <button class="nav-item" data-tab="stats" aria-label="Estadísticas">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Estadísticas</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="sidebar-bottom">
+        <div class="api-chip" id="apiChip">
+          <span class="api-dot"></span>
+          <span class="api-label" id="apiLabel">Detectando…</span>
         </div>
       </div>
+    </aside>
 
-      <!-- Right: options -->
-      <div>
-        <div class="card">
-          <div class="card-title">Opciones de generación</div>
-          <div class="form-group">
-            <label>Longitud: <span id="lenDisplay">16</span></label>
-            <div class="range-wrap">
-              <span style="color:var(--muted);font-size:0.8rem;">4</span>
-              <input type="range" id="lengthSlider" min="4" max="128" value="16"
-                     oninput="document.getElementById('lenDisplay').textContent=this.value">
-              <span style="color:var(--muted);font-size:0.8rem;">128</span>
+    <!-- MAIN CONTENT -->
+    <main class="main" id="main">
+
+      <!-- ── GENERATOR ── -->
+      <section class="page active" id="page-generator">
+        <header class="page-header">
+          <div>
+            <h1 class="page-title">Generador</h1>
+            <p class="page-sub">Crea contraseñas criptográficamente seguras</p>
+          </div>
+        </header>
+
+        <div class="gen-layout">
+
+          <!-- OUTPUT PANEL -->
+          <div class="panel output-panel">
+            <div class="panel-label">Contraseña generada</div>
+
+            <div class="output-stage" id="outputStage">
+              <div class="output-text" id="outputText" aria-label="Contraseña generada">
+                <span class="output-placeholder">Configura y genera →</span>
+              </div>
+              <div class="output-overlay" id="outputOverlay">
+                <span>Haz clic para revelar</span>
+              </div>
+            </div>
+
+            <div class="meter-row">
+              <div class="meter-track">
+                <div class="meter-fill" id="meterFill"></div>
+                <div class="meter-segments">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+              <span class="meter-label" id="meterLabel">—</span>
+            </div>
+
+            <div class="output-actions">
+              <button class="btn btn-generate" id="btnGenerate">
+                <span class="btn-icon">⚡</span> Generar
+              </button>
+              <button class="btn btn-copy" id="btnCopy" disabled>
+                <span class="btn-icon">📋</span> Copiar
+              </button>
+              <button class="btn btn-refresh" id="btnRefresh" disabled title="Regenerar">
+                <span class="btn-icon spin-on-click">↺</span>
+              </button>
             </div>
           </div>
 
-          <div class="sep"></div>
-          <div class="card-title">Tipos de caracteres</div>
+          <!-- CONFIG PANEL -->
+          <div class="panel config-panel">
+            <div class="panel-label">Configuración</div>
 
-          <div class="toggle-grid">
-            <div class="toggle-item on" id="tUpper" onclick="toggle(this)">
-              <span class="toggle-label">Mayúsculas<br><small style="color:var(--muted)">A–Z</small></span>
-              <div class="toggle-switch"></div>
+            <div class="config-section">
+              <div class="cfg-row">
+                <label class="cfg-label" for="lengthSlider">
+                  Longitud
+                  <span class="cfg-val" id="lenVal">16</span>
+                </label>
+                <div class="slider-wrap">
+                  <input type="range" id="lengthSlider" min="4" max="128" value="16">
+                  <div class="slider-track-fill" id="sliderFill"></div>
+                </div>
+                <div class="slider-hints">
+                  <span>4</span><span>32</span><span>64</span><span>128</span>
+                </div>
+              </div>
             </div>
-            <div class="toggle-item on" id="tLower" onclick="toggle(this)">
-              <span class="toggle-label">Minúsculas<br><small style="color:var(--muted)">a–z</small></span>
-              <div class="toggle-switch"></div>
+
+            <div class="config-section">
+              <div class="cfg-section-title">Conjuntos de caracteres</div>
+              <div class="charset-grid">
+                <label class="charset-card active" data-key="upper">
+                  <input type="checkbox" checked hidden>
+                  <div class="charset-sample">ABC</div>
+                  <div class="charset-name">Mayúsculas</div>
+                  <div class="charset-check">✓</div>
+                </label>
+                <label class="charset-card active" data-key="lower">
+                  <input type="checkbox" checked hidden>
+                  <div class="charset-sample">abc</div>
+                  <div class="charset-name">Minúsculas</div>
+                  <div class="charset-check">✓</div>
+                </label>
+                <label class="charset-card active" data-key="nums">
+                  <input type="checkbox" checked hidden>
+                  <div class="charset-sample">123</div>
+                  <div class="charset-name">Números</div>
+                  <div class="charset-check">✓</div>
+                </label>
+                <label class="charset-card" data-key="syms">
+                  <input type="checkbox" hidden>
+                  <div class="charset-sample">!@#</div>
+                  <div class="charset-name">Símbolos</div>
+                  <div class="charset-check">✓</div>
+                </label>
+              </div>
             </div>
-            <div class="toggle-item on" id="tNumbers" onclick="toggle(this)">
-              <span class="toggle-label">Números<br><small style="color:var(--muted)">0–9</small></span>
-              <div class="toggle-switch"></div>
-            </div>
-            <div class="toggle-item" id="tSymbols" onclick="toggle(this)">
-              <span class="toggle-label">Símbolos<br><small style="color:var(--muted)">!@#$…</small></span>
-              <div class="toggle-switch"></div>
+
+            <div class="config-section">
+              <div class="cfg-section-title">Presets rápidos</div>
+              <div class="preset-row">
+                <button class="preset-btn" data-preset="pin">🔢 PIN</button>
+                <button class="preset-btn" data-preset="std">📱 Estándar</button>
+                <button class="preset-btn" data-preset="strong">🛡️ Fuerte</button>
+                <button class="preset-btn" data-preset="max">🔒 Máximo</button>
+              </div>
             </div>
           </div>
 
-          <div class="sep"></div>
-          <div class="card-title">Ajustes rápidos</div>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;">
-            <button class="btn btn-ghost btn-sm" onclick="preset(12,true,true,true,false)">📱 Estándar</button>
-            <button class="btn btn-ghost btn-sm" onclick="preset(20,true,true,true,true)">🛡️ Fuerte</button>
-            <button class="btn btn-ghost btn-sm" onclick="preset(32,true,true,true,true)">🔒 Máximo</button>
-            <button class="btn btn-ghost btn-sm" onclick="preset(8,false,true,true,false)">📝 Simple</button>
+          <!-- SAVE PANEL -->
+          <div class="panel save-panel">
+            <div class="panel-label">Guardar en bóveda</div>
+            <div class="form-field">
+              <label class="field-label" for="saveName">Nombre / Servicio</label>
+              <input type="text" id="saveName" class="field-input"
+                     placeholder="Gmail, GitHub, Netflix…" autocomplete="off">
+            </div>
+            <div class="form-row">
+              <div class="form-field">
+                <label class="field-label" for="saveCategory">Categoría</label>
+                <select id="saveCategory" class="field-input">
+                  <option value="General">🌐 General</option>
+                  <option value="Trabajo">💼 Trabajo</option>
+                  <option value="Social">📱 Redes sociales</option>
+                  <option value="Finanzas">💳 Finanzas</option>
+                  <option value="Entretenimiento">🎮 Entretenimiento</option>
+                  <option value="Educacion">📚 Educación</option>
+                  <option value="Otro">🔑 Otro</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label class="field-label" for="saveNotes">Notas</label>
+              <textarea id="saveNotes" class="field-input" rows="2"
+                        placeholder="Email asociado, observaciones…"></textarea>
+            </div>
+            <button class="btn btn-save btn-full" id="btnSave" disabled>
+              <span class="btn-icon">💾</span> Guardar contraseña
+            </button>
+          </div>
+
+        </div><!-- /gen-layout -->
+      </section>
+
+      <!-- ── VAULT ── -->
+      <section class="page" id="page-vault">
+        <header class="page-header">
+          <div>
+            <h1 class="page-title">Bóveda</h1>
+            <p class="page-sub">Tus contraseñas guardadas</p>
+          </div>
+        </header>
+
+        <div class="vault-toolbar">
+          <div class="search-wrap">
+            <span class="search-ico">🔍</span>
+            <input type="text" id="searchInput" class="search-input"
+                   placeholder="Buscar por nombre o categoría…" autocomplete="off">
+            <button class="search-clear" id="searchClear" hidden>×</button>
+          </div>
+          <select id="filterCat" class="field-input filter-select">
+            <option value="">Todas las categorías</option>
+            <option value="General">🌐 General</option>
+            <option value="Trabajo">💼 Trabajo</option>
+            <option value="Social">📱 Redes sociales</option>
+            <option value="Finanzas">💳 Finanzas</option>
+            <option value="Entretenimiento">🎮 Entretenimiento</option>
+            <option value="Educacion">📚 Educación</option>
+            <option value="Otro">🔑 Otro</option>
+          </select>
+          <select id="sortBy" class="field-input filter-select">
+            <option value="date">Más reciente</option>
+            <option value="name">Nombre A–Z</option>
+            <option value="strength">Más fuerte</option>
+          </select>
+        </div>
+
+        <div class="vault-list" id="vaultList">
+          <!-- filled by JS -->
+        </div>
+      </section>
+
+      <!-- ── STATS ── -->
+      <section class="page" id="page-stats">
+        <header class="page-header">
+          <div>
+            <h1 class="page-title">Estadísticas</h1>
+            <p class="page-sub">Análisis de tu bóveda</p>
+          </div>
+        </header>
+
+        <div class="stats-grid">
+          <div class="stat-card accent">
+            <div class="stat-icon">🔑</div>
+            <div class="stat-val" id="sTotalPwds">0</div>
+            <div class="stat-name">Total guardadas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🛡️</div>
+            <div class="stat-val" id="sStrongPwds">0</div>
+            <div class="stat-name">Contraseñas fuertes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-val" id="sWeakPwds">0</div>
+            <div class="stat-name">Contraseñas débiles</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📁</div>
+            <div class="stat-val" id="sCats">0</div>
+            <div class="stat-name">Categorías usadas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📏</div>
+            <div class="stat-val" id="sAvgLen">0</div>
+            <div class="stat-name">Longitud promedio</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-val" id="sAvgStr">0%</div>
+            <div class="stat-name">Fortaleza promedio</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- VAULT SECTION -->
-  <div class="section" id="sec-vault">
-    <div class="vault-header">
-      <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input type="text" class="search-input" id="searchInput"
-               placeholder="Buscar contraseñas…" oninput="renderVault()">
-      </div>
-      <select id="filterCategory" onchange="renderVault()"
-              style="width:auto;min-width:150px;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Syne',sans-serif;font-size:0.9rem;outline:none;">
-        <option value="">Todas las categorías</option>
-        <option value="General">General</option>
-        <option value="Trabajo">Trabajo</option>
-        <option value="Social">Redes Sociales</option>
-        <option value="Finanzas">Finanzas</option>
-        <option value="Entretenimiento">Entretenimiento</option>
-        <option value="Educacion">Educación</option>
-        <option value="Otro">Otro</option>
-      </select>
-    </div>
-    <div class="pwd-list" id="pwdList">
-      <div class="empty-state">
-        <div class="empty-icon">🔐</div>
-        <p>Tu bóveda está vacía.<br>Genera y guarda tu primera contraseña.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-// ─── STATE ────────────────────────────────────────────────────────────────────
-const API = 'http://localhost:8080/api/passwords';
-let useApi = false;
-let currentPwd = '';
-let vault = JSON.parse(localStorage.getItem('passforge_vault') || '[]');
-
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-async function init() {
-  try {
-    const r = await fetch(`${API}`, { signal: AbortSignal.timeout(1500) });
-    if (r.ok) {
-      useApi = true;
-      vault = await r.json();
-      setStatus(true, 'API Java conectada');
-    }
-  } catch {
-    setStatus(false, 'Modo local (sin servidor)');
-  }
-  updateStats();
-}
-
-function setStatus(online, msg) {
-  document.getElementById('statusDot').className = 'status-dot' + (online ? ' online' : '');
-  document.getElementById('statusText').textContent = msg;
-}
-
-// ─── TABS ─────────────────────────────────────────────────────────────────────
-function switchTab(name) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('sec-' + name).classList.add('active');
-  event.target.classList.add('active');
-  if (name === 'vault') renderVault();
-}
-
-// ─── TOGGLES ─────────────────────────────────────────────────────────────────
-function toggle(el) { el.classList.toggle('on'); }
-function isOn(id)   { return document.getElementById(id).classList.contains('on'); }
-
-function preset(len, up, low, num, sym) {
-  document.getElementById('lengthSlider').value = len;
-  document.getElementById('lenDisplay').textContent = len;
-  document.getElementById('tUpper').classList[up  ? 'add' : 'remove']('on');
-  document.getElementById('tLower').classList[low ? 'add' : 'remove']('on');
-  document.getElementById('tNumbers').classList[num? 'add' : 'remove']('on');
-  document.getElementById('tSymbols').classList[sym? 'add' : 'remove']('on');
-  generatePassword();
-}
-
-// ─── PASSWORD GENERATION ──────────────────────────────────────────────────────
-function generatePassword() {
-  const len  = parseInt(document.getElementById('lengthSlider').value);
-  const up   = isOn('tUpper');
-  const low  = isOn('tLower');
-  const num  = isOn('tNumbers');
-  const sym  = isOn('tSymbols');
-
-  if (!up && !low && !num && !sym) {
-    notify('Selecciona al menos un tipo de carácter.', 'error'); return;
-  }
-
-  if (useApi) {
-    fetch(`${API}/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ length: len, uppercase: up, lowercase: low, numbers: num, symbols: sym })
-    })
-    .then(r => r.json())
-    .then(d => displayPassword(d.password, d.strength))
-    .catch(() => displayPassword(genLocal(len, up, low, num, sym)));
-  } else {
-    const pwd = genLocal(len, up, low, num, sym);
-    displayPassword(pwd, calcStrength(pwd));
-  }
-}
-
-function genLocal(len, up, low, num, sym) {
-  const U = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const L = 'abcdefghijklmnopqrstuvwxyz';
-  const N = '0123456789';
-  const S = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-
-  let pool = '';
-  let guaranteed = [];
-  if (up)  { pool += U; guaranteed.push(U[Math.floor(Math.random()*U.length)]); }
-  if (low) { pool += L; guaranteed.push(L[Math.floor(Math.random()*L.length)]); }
-  if (num) { pool += N; guaranteed.push(N[Math.floor(Math.random()*N.length)]); }
-  if (sym) { pool += S; guaranteed.push(S[Math.floor(Math.random()*S.length)]); }
-
-  let chars = [...guaranteed];
-  for (let i = chars.length; i < len; i++) chars.push(pool[Math.floor(Math.random()*pool.length)]);
-  return chars.sort(() => Math.random()-0.5).join('');
-}
-
-function calcStrength(pwd) {
-  let s = 0;
-  if (pwd.length >= 8)  s += 20;
-  if (pwd.length >= 12) s += 10;
-  if (pwd.length >= 16) s += 10;
-  if (/[A-Z]/.test(pwd)) s += 15;
-  if (/[a-z]/.test(pwd)) s += 15;
-  if (/[0-9]/.test(pwd)) s += 15;
-  if (/[^A-Za-z0-9]/.test(pwd)) s += 15;
-  return Math.min(s, 100);
-}
-
-function displayPassword(pwd, strength) {
-  currentPwd = pwd;
-  const el = document.getElementById('pwdOutput');
-  el.textContent = pwd;
-  el.className = 'pwd-text';
-
-  const fill  = document.getElementById('strengthFill');
-  const label = document.getElementById('strengthLabel');
-  fill.style.width = strength + '%';
-
-  if (strength < 40) {
-    fill.style.background = '#f54040';
-    label.textContent = '⚠️ Débil (' + strength + '%)';
-  } else if (strength < 70) {
-    fill.style.background = '#f5c440';
-    label.textContent = '⚡ Media (' + strength + '%)';
-  } else {
-    fill.style.background = 'var(--accent)';
-    label.textContent = '🛡️ Fuerte (' + strength + '%)';
-  }
-}
-
-// ─── COPY ─────────────────────────────────────────────────────────────────────
-async function copyPassword() {
-  if (!currentPwd) { notify('Primero genera una contraseña.', 'error'); return; }
-  await navigator.clipboard.writeText(currentPwd);
-  const btn = document.getElementById('copyBtn');
-  btn.textContent = '✅ Copiada!';
-  btn.classList.add('copy-success');
-  setTimeout(() => { btn.textContent = '📋 Copiar'; btn.classList.remove('copy-success'); }, 2000);
-  notify('Contraseña copiada al portapapeles.', 'success');
-}
-
-async function copyText(text) {
-  await navigator.clipboard.writeText(text);
-  notify('Copiada al portapapeles.', 'success');
-}
-
-// ─── SAVE ─────────────────────────────────────────────────────────────────────
-async function savePassword() {
-  if (!currentPwd) { notify('Primero genera una contraseña.', 'error'); return; }
-  const name = document.getElementById('saveName').value.trim() || 'Sin nombre';
-  const cat  = document.getElementById('saveCategory').value;
-  const notes= document.getElementById('saveNotes').value.trim();
-  const len  = parseInt(document.getElementById('lengthSlider').value);
-
-  if (useApi) {
-    const r = await fetch(`${API}/save`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, password: currentPwd, category: cat, notes })
-    }).catch(() => null);
-
-    if (r && r.ok) {
-      vault = await (await fetch(API)).json();
-    } else {
-      saveLocal(name, cat, notes, len);
-    }
-  } else {
-    saveLocal(name, cat, notes, len);
-  }
-
-  document.getElementById('saveName').value = '';
-  document.getElementById('saveNotes').value = '';
-  updateStats();
-  notify(`"${name}" guardada en tu bóveda.`, 'success');
-}
-
-function saveLocal(name, category, notes, length) {
-  const entry = {
-    id: Date.now(),
-    name, category, notes, length,
-    passwordValue: currentPwd,
-    createdAt: new Date().toISOString(),
-    strength: calcStrength(currentPwd)
-  };
-  vault.unshift(entry);
-  localStorage.setItem('passforge_vault', JSON.stringify(vault));
-}
-
-// ─── VAULT RENDER ─────────────────────────────────────────────────────────────
-const ICONS = { Trabajo:'💼', Social:'📱', Finanzas:'💳', Entretenimiento:'🎮', Educacion:'📚', Otro:'🔑', General:'🌐' };
-
-function renderVault() {
-  const q   = document.getElementById('searchInput').value.toLowerCase();
-  const cat = document.getElementById('filterCategory').value;
-
-  let items = vault.filter(p => {
-    const matchQ   = !q || p.name.toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q);
-    const matchCat = !cat || p.category === cat;
-    return matchQ && matchCat;
-  });
-
-  const list = document.getElementById('pwdList');
-
-  if (items.length === 0) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="empty-icon">🗄️</div>
-      <p>${vault.length === 0 ? 'Tu bóveda está vacía.<br>Genera y guarda tu primera contraseña.' : 'No se encontraron resultados.'}</p>
-    </div>`;
-    return;
-  }
-
-  list.innerHTML = items.map(p => {
-    const icon = ICONS[p.category] || '🔑';
-    const dt   = new Date(p.createdAt).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
-    const str  = p.strength || calcStrength(p.passwordValue || '');
-    const strColor = str >= 70 ? 'var(--accent)' : str >= 40 ? 'var(--warn)' : 'var(--danger)';
-    return `
-    <div class="pwd-card">
-      <div class="pwd-card-icon">${icon}</div>
-      <div class="pwd-card-info">
-        <div class="pwd-card-name">${escHtml(p.name)}</div>
-        <div class="pwd-card-meta">
-          <span class="badge">${p.category||'General'}</span>
-          &nbsp;${dt}&nbsp;·&nbsp;
-          <span style="color:${strColor}">${str}% fuerza</span>
-          ${p.notes ? '&nbsp;·&nbsp;<span title="'+escHtml(p.notes)+'">📝</span>' : ''}
+        <div class="panel" style="margin-top:28px;">
+          <div class="panel-label">Distribución por categoría</div>
+          <div class="cat-bars" id="catBars">
+            <p class="empty-hint">Aún no tienes contraseñas guardadas.</p>
+          </div>
         </div>
-      </div>
-      <div class="pwd-card-value hidden" id="pv${p.id}"
-           onclick="this.classList.toggle('hidden')"
-           title="Clic para revelar">${escHtml(p.passwordValue||'')}</div>
-      <div class="pwd-card-actions">
-        <button class="btn btn-ghost btn-sm" onclick="copyText('${escAttr(p.passwordValue||'')}')">📋</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteEntry(${p.id})">🗑️</button>
-      </div>
-    </div>`;
-  }).join('');
-}
 
-async function deleteEntry(id) {
-  if (!confirm('¿Eliminar esta contraseña?')) return;
+        <div class="panel" style="margin-top:20px;">
+          <div class="panel-label">Distribución de fortaleza</div>
+          <div class="strength-dist" id="strengthDist"></div>
+        </div>
+      </section>
 
-  if (useApi) {
-    const r = await fetch(`${API}/${id}`, { method: 'DELETE' }).catch(() => null);
-    if (r && r.ok) { vault = await (await fetch(API)).json(); }
-    else           { vault = vault.filter(p => p.id !== id); localStorage.setItem('passforge_vault', JSON.stringify(vault)); }
-  } else {
-    vault = vault.filter(p => p.id !== id);
-    localStorage.setItem('passforge_vault', JSON.stringify(vault));
-  }
-  updateStats(); renderVault();
-  notify('Contraseña eliminada.', 'success');
-}
+    </main><!-- /main -->
+  </div><!-- /shell -->
 
-// ─── STATS ────────────────────────────────────────────────────────────────────
-function updateStats() {
-  document.getElementById('statTotal').textContent = vault.length;
-  const cats = new Set(vault.map(p => p.category).filter(Boolean));
-  document.getElementById('statCategories').textContent = cats.size;
-  const strong = vault.filter(p => (p.strength || calcStrength(p.passwordValue||'')) >= 70).length;
-  document.getElementById('statStrong').textContent = strong;
-}
-
-// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
-function notify(msg, type = 'success') {
-  const area = document.getElementById('notifArea');
-  const el   = document.createElement('div');
-  el.className = `notif ${type}`;
-  el.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span> ${msg}`;
-  area.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
-}
-
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
-function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function escAttr(s) { return String(s).replace(/'/g,"\\'"); }
-
-// ─── START ────────────────────────────────────────────────────────────────────
-init();
-</script>
+  <script src="app.js"></script>
 </body>
 </html>
