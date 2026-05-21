@@ -325,8 +325,8 @@ const Vault = (() => {
    ───────────────────────────────────────────────────────────── */
 const UI = (() => {
   const CAT_ICONS = {
-    General:'🌐', Trabajo:'💼', Social:'📱',
-    Finanzas:'💳', Entretenimiento:'🎮', Educacion:'📚', Otro:'🔑'
+    General:'GEN', Trabajo:'TRB', Social:'SOC',
+    Finanzas:'FIN', Entretenimiento:'ENT', Educacion:'EDU', Otro:'OTR'
   };
 
   // — Output panel —
@@ -369,7 +369,7 @@ const UI = (() => {
     // Defer width animation one frame
     requestAnimationFrame(() => { meterFill.style.width = strength + '%'; });
 
-    const label = strength >= 70 ? '🛡️ Fuerte' : strength >= 40 ? '⚡ Media' : '⚠️ Débil';
+    const label = strength >= 70 ? 'Fuerte' : strength >= 40 ? 'Media' : 'Debil';
     meterLabel.textContent = `${label} (${strength}%)`;
 
     btnCopy.disabled    = false;
@@ -389,36 +389,46 @@ const UI = (() => {
 
     if (items.length === 0) {
       const msg = Vault.count() === 0
-        ? 'Tu bóveda está vacía.<br>Genera y guarda tu primera contraseña.'
-        : 'Sin resultados para esa búsqueda.';
+        ? 'Tu boveda esta vacia.<br>Genera y guarda tu primera contrasena.'
+        : 'Sin resultados para esa busqueda.';
       list.innerHTML = `<div class="vault-empty">
-        <div class="vault-empty-icon">🗄️</div><p>${msg}</p></div>`;
+        <div class="vault-empty-icon">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="24" cy="12" rx="16" ry="6" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 12v10c0 3.314 7.163 6 16 6s16-2.686 16-6V12" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 22v10c0 3.314 7.163 6 16 6s16-2.686 16-6V22" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </div><p>${msg}</p></div>`;
       return;
     }
 
     list.innerHTML = items.map((p, idx) => {
-      const icon = CAT_ICONS[p.category] || '🔑';
+      const abbr = CAT_ICONS[p.category] || 'OTR';
       const str  = p.strength || 0;
       const strClass = str >= 70 ? 'strong' : str >= 40 ? 'medium' : 'weak';
-      const strLabel = str >= 70 ? '🛡️ Fuerte' : str >= 40 ? '⚡ Media' : '⚠️ Débil';
+      const strLabel = str >= 70 ? 'Fuerte' : str >= 40 ? 'Media' : 'Debil';
       const date = new Date(p.createdAt).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
 
       return `<div class="vault-card" style="animation-delay:${idx*40}ms">
-        <div class="vc-avatar">${icon}</div>
+        <div class="vc-avatar"><span class="vc-abbr">${abbr}</span></div>
         <div class="vc-info">
           <div class="vc-name">${esc(p.name)}</div>
           <div class="vc-meta">
             <span class="vc-badge">${p.category||'General'}</span>
             <span>${date}</span>
             <span class="vc-str ${strClass}">${strLabel}</span>
-            ${p.notes ? `<span title="${esc(p.notes)}">📝</span>` : ''}
+            ${p.notes ? `<span class="vc-notes-tag" title="${esc(p.notes)}">nota</span>` : ''}
           </div>
         </div>
         <div class="vc-pwd" data-pwd="${escAttr(p.passwordValue||'')}"
              title="Clic para revelar">${esc(p.passwordValue||'')}</div>
         <div class="vc-actions">
-          <button class="icon-btn" title="Copiar" data-copy="${escAttr(p.passwordValue||'')}">📋</button>
-          <button class="icon-btn del" title="Eliminar" data-del="${p.id}">🗑️</button>
+          <button class="icon-btn" title="Copiar" data-copy="${escAttr(p.passwordValue||'')}">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12H5" stroke="currentColor" stroke-width="1.5"/></svg>
+          </button>
+          <button class="icon-btn del" title="Eliminar" data-del="${p.id}">
+            <svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M3 4h10M6 4V2.5A.5.5 0 0 1 6.5 2h3a.5.5 0 0 1 .5.5V4M5 4l.5 9h5L11 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>`;
     }).join('');
@@ -430,8 +440,10 @@ const UI = (() => {
     list.querySelectorAll('[data-copy]').forEach(btn => {
       btn.addEventListener('click', async () => {
         await copyText(btn.dataset.copy);
-        btn.textContent = '✅';
-        setTimeout(() => { btn.textContent = '📋'; }, 1500);
+        btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        setTimeout(() => {
+          btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" width="14" height="14"><rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12H5" stroke="currentColor" stroke-width="1.5"/></svg>';
+        }, 1500);
       });
     });
     list.querySelectorAll('[data-del]').forEach(btn => {
@@ -466,7 +478,7 @@ const UI = (() => {
       ? '<p class="empty-hint">Aún no tienes contraseñas guardadas.</p>'
       : Object.entries(catMap).sort((a,b)=>b[1]-a[1]).map(([name, count]) => `
           <div class="cat-bar-row">
-            <span class="cat-bar-name">${CAT_ICONS[name]||'🔑'} ${name}</span>
+            <span class="cat-bar-name">${name}</span>
             <div class="cat-bar-track">
               <div class="cat-bar-fill" style="width:${Math.round(count/maxCat*100)}%"></div>
             </div>
@@ -496,7 +508,7 @@ const UI = (() => {
     const dot   = document.getElementById('apiChip').querySelector('.api-dot');
     const label = document.getElementById('apiLabel');
     dot.classList.toggle('online', online);
-    label.textContent = online ? 'API Java ✓' : 'Modo local';
+    label.textContent = online ? 'API Java OK' : 'Modo local';
   }
 
   // — Vault badge counter —
@@ -509,8 +521,13 @@ const UI = (() => {
     const stack = document.getElementById('notifStack');
     const el = document.createElement('div');
     el.className = `notif ${type}`;
-    el.innerHTML = `<span class="notif-icon">${type === 'ok' ? '✅' : '❌'}</span>
-                    <span class="notif-text">${msg}</span>`;
+    el.innerHTML = `<span class="notif-icon">
+        ${type === 'ok'
+          ? '<svg viewBox="0 0 16 16" fill="none" width="16" height="16"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 8l2.5 2.5L11 5.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+          : '<svg viewBox="0 0 16 16" fill="none" width="16" height="16"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M5.5 5.5l5 5M10.5 5.5l-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>'
+        }
+      </span>
+      <span class="notif-text">${msg}</span>`;
     stack.appendChild(el);
     setTimeout(() => {
       el.classList.add('fade-out');
@@ -549,10 +566,10 @@ const Actions = (() => {
     await copyText(currentPwd);
     const btn = document.getElementById('btnCopy');
     btn.classList.add('copied');
-    btn.innerHTML = '<span class="btn-icon">✅</span> Copiada';
+    btn.innerHTML = `<svg class="btn-svg" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Copiada`;
     setTimeout(() => {
       btn.classList.remove('copied');
-      btn.innerHTML = '<span class="btn-icon">📋</span> Copiar';
+      btn.innerHTML = `<svg class="btn-svg" viewBox="0 0 16 16" fill="none"><rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12H5" stroke="currentColor" stroke-width="1.5"/></svg> Copiar`;
     }, 2000);
   }
 
