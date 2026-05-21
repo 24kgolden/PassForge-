@@ -10,29 +10,30 @@
 </head>
 <body>
 
-  <!-- ░░░ CANVAS LAYERS ░░░ -->
+  <!-- CANVAS LAYERS -->
   <canvas id="bgCanvas" aria-hidden="true"></canvas>
   <div class="noise-overlay" aria-hidden="true"></div>
   <div class="vignette"      aria-hidden="true"></div>
 
-  <!-- ░░░ NOTIFICATIONS ░░░ -->
+  <!-- NOTIFICATIONS -->
   <div class="notif-stack" id="notifStack" role="status" aria-live="polite"></div>
 
-  <!-- ░░░ APP SHELL ░░░ -->
+  <!-- APP SHELL -->
   <div class="shell">
 
     <!-- SIDEBAR -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-top">
+
         <div class="brand">
           <div class="brand-mark">
-            <svg viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="url(#g1)"/>
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="32" height="32" rx="8" fill="url(#brandGrad)"/>
               <path d="M10 14v-2a6 6 0 0 1 12 0v2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
               <rect x="7" y="14" width="18" height="12" rx="4" fill="#fff" fill-opacity=".15" stroke="#fff" stroke-width="1.5"/>
               <circle cx="16" cy="20" r="2" fill="#fff"/>
               <defs>
-                <linearGradient id="g1" x1="0" y1="0" x2="32" y2="32">
+                <linearGradient id="brandGrad" x1="0" y1="0" x2="32" y2="32">
                   <stop offset="0%" stop-color="#1dffa0"/>
                   <stop offset="100%" stop-color="#00b4ff"/>
                 </linearGradient>
@@ -46,27 +47,50 @@
         </div>
 
         <nav class="nav" role="navigation">
+
           <button class="nav-item active" data-tab="generator" aria-label="Generador">
-            <span class="nav-icon">⚡</span>
+            <span class="nav-icon">
+              <!-- bolt / generate -->
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M11 2L4 11h7l-2 7 9-10h-7l2-6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              </svg>
+            </span>
             <span class="nav-label">Generador</span>
             <span class="nav-pip"></span>
           </button>
-          <button class="nav-item" data-tab="vault" aria-label="Bóveda">
-            <span class="nav-icon">🗄️</span>
-            <span class="nav-label">Bóveda</span>
+
+          <button class="nav-item" data-tab="vault" aria-label="Boveda">
+            <span class="nav-icon">
+              <!-- vault / database -->
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <ellipse cx="10" cy="5" rx="7" ry="3" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M3 5v5c0 1.657 3.134 3 7 3s7-1.343 7-3V5" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M3 10v5c0 1.657 3.134 3 7 3s7-1.343 7-3v-5" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </span>
+            <span class="nav-label">Boveda</span>
             <span class="nav-badge" id="vaultBadge">0</span>
           </button>
-          <button class="nav-item" data-tab="stats" aria-label="Estadísticas">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Estadísticas</span>
+
+          <button class="nav-item" data-tab="stats" aria-label="Estadisticas">
+            <span class="nav-icon">
+              <!-- bar chart -->
+              <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2"  y="11" width="4" height="7" rx="1" stroke="currentColor" stroke-width="1.6"/>
+                <rect x="8"  y="6"  width="4" height="12" rx="1" stroke="currentColor" stroke-width="1.6"/>
+                <rect x="14" y="2"  width="4" height="16" rx="1" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+            </span>
+            <span class="nav-label">Estadisticas</span>
           </button>
+
         </nav>
       </div>
 
       <div class="sidebar-bottom">
         <div class="api-chip" id="apiChip">
           <span class="api-dot"></span>
-          <span class="api-label" id="apiLabel">Detectando…</span>
+          <span class="api-label" id="apiLabel">Detectando...</span>
         </div>
       </div>
     </aside>
@@ -74,12 +98,12 @@
     <!-- MAIN CONTENT -->
     <main class="main" id="main">
 
-      <!-- ── GENERATOR ── -->
+      <!-- GENERATOR -->
       <section class="page active" id="page-generator">
         <header class="page-header">
           <div>
             <h1 class="page-title">Generador</h1>
-            <p class="page-sub">Crea contraseñas criptográficamente seguras</p>
+            <p class="page-sub">Crea contrasenas criptograficamente seguras</p>
           </div>
         </header>
 
@@ -87,14 +111,14 @@
 
           <!-- OUTPUT PANEL -->
           <div class="panel output-panel">
-            <div class="panel-label">Contraseña generada</div>
+            <div class="panel-label">Contrasena generada</div>
 
             <div class="output-stage" id="outputStage">
-              <div class="output-text" id="outputText" aria-label="Contraseña generada">
-                <span class="output-placeholder">Configura y genera →</span>
+              <div class="output-text" id="outputText" aria-label="Contrasena generada">
+                <span class="output-placeholder">Configura y genera</span>
               </div>
               <div class="output-overlay" id="outputOverlay">
-                <span>Haz clic para revelar</span>
+                <span>Clic para revelar</span>
               </div>
             </div>
 
@@ -105,25 +129,35 @@
                   <span></span><span></span><span></span><span></span>
                 </div>
               </div>
-              <span class="meter-label" id="meterLabel">—</span>
+              <span class="meter-label" id="meterLabel">--</span>
             </div>
 
             <div class="output-actions">
               <button class="btn btn-generate" id="btnGenerate">
-                <span class="btn-icon">⚡</span> Generar
+                <svg class="btn-svg" viewBox="0 0 16 16" fill="none">
+                  <path d="M9 1.5L3.5 9H8l-1.5 5.5L14 7H9L9 1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+                </svg>
+                Generar
               </button>
               <button class="btn btn-copy" id="btnCopy" disabled>
-                <span class="btn-icon">📋</span> Copiar
+                <svg class="btn-svg" viewBox="0 0 16 16" fill="none">
+                  <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M11 5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12H5" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                Copiar
               </button>
               <button class="btn btn-refresh" id="btnRefresh" disabled title="Regenerar">
-                <span class="btn-icon spin-on-click">↺</span>
+                <svg class="btn-svg spin-on-click" viewBox="0 0 16 16" fill="none">
+                  <path d="M13.5 8A5.5 5.5 0 1 1 8 2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                  <path d="M8 2.5L10.5 5 8 7.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
               </button>
             </div>
           </div>
 
           <!-- CONFIG PANEL -->
           <div class="panel config-panel">
-            <div class="panel-label">Configuración</div>
+            <div class="panel-label">Configuracion</div>
 
             <div class="config-section">
               <div class="cfg-row">
@@ -147,171 +181,198 @@
                 <label class="charset-card active" data-key="upper">
                   <input type="checkbox" checked hidden>
                   <div class="charset-sample">ABC</div>
-                  <div class="charset-name">Mayúsculas</div>
-                  <div class="charset-check">✓</div>
+                  <div class="charset-name">Mayusculas</div>
+                  <div class="charset-check">
+                    <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </label>
                 <label class="charset-card active" data-key="lower">
                   <input type="checkbox" checked hidden>
                   <div class="charset-sample">abc</div>
-                  <div class="charset-name">Minúsculas</div>
-                  <div class="charset-check">✓</div>
+                  <div class="charset-name">Minusculas</div>
+                  <div class="charset-check">
+                    <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </label>
                 <label class="charset-card active" data-key="nums">
                   <input type="checkbox" checked hidden>
                   <div class="charset-sample">123</div>
-                  <div class="charset-name">Números</div>
-                  <div class="charset-check">✓</div>
+                  <div class="charset-name">Numeros</div>
+                  <div class="charset-check">
+                    <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </label>
                 <label class="charset-card" data-key="syms">
                   <input type="checkbox" hidden>
                   <div class="charset-sample">!@#</div>
-                  <div class="charset-name">Símbolos</div>
-                  <div class="charset-check">✓</div>
+                  <div class="charset-name">Simbolos</div>
+                  <div class="charset-check">
+                    <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </div>
                 </label>
               </div>
             </div>
 
             <div class="config-section">
-              <div class="cfg-section-title">Presets rápidos</div>
+              <div class="cfg-section-title">Presets rapidos</div>
               <div class="preset-row">
-                <button class="preset-btn" data-preset="pin">🔢 PIN</button>
-                <button class="preset-btn" data-preset="std">📱 Estándar</button>
-                <button class="preset-btn" data-preset="strong">🛡️ Fuerte</button>
-                <button class="preset-btn" data-preset="max">🔒 Máximo</button>
+                <button class="preset-btn" data-preset="pin">PIN</button>
+                <button class="preset-btn" data-preset="std">Estandar</button>
+                <button class="preset-btn" data-preset="strong">Fuerte</button>
+                <button class="preset-btn" data-preset="max">Maximo</button>
               </div>
             </div>
           </div>
 
           <!-- SAVE PANEL -->
           <div class="panel save-panel">
-            <div class="panel-label">Guardar en bóveda</div>
+            <div class="panel-label">Guardar en boveda</div>
             <div class="form-field">
               <label class="field-label" for="saveName">Nombre / Servicio</label>
               <input type="text" id="saveName" class="field-input"
-                     placeholder="Gmail, GitHub, Netflix…" autocomplete="off">
+                     placeholder="Gmail, GitHub, Netflix..." autocomplete="off">
             </div>
             <div class="form-row">
               <div class="form-field">
-                <label class="field-label" for="saveCategory">Categoría</label>
+                <label class="field-label" for="saveCategory">Categoria</label>
                 <select id="saveCategory" class="field-input">
-                  <option value="General">🌐 General</option>
-                  <option value="Trabajo">💼 Trabajo</option>
-                  <option value="Social">📱 Redes sociales</option>
-                  <option value="Finanzas">💳 Finanzas</option>
-                  <option value="Entretenimiento">🎮 Entretenimiento</option>
-                  <option value="Educacion">📚 Educación</option>
-                  <option value="Otro">🔑 Otro</option>
+                  <option value="General">General</option>
+                  <option value="Trabajo">Trabajo</option>
+                  <option value="Social">Redes sociales</option>
+                  <option value="Finanzas">Finanzas</option>
+                  <option value="Entretenimiento">Entretenimiento</option>
+                  <option value="Educacion">Educacion</option>
+                  <option value="Otro">Otro</option>
                 </select>
               </div>
             </div>
             <div class="form-field">
               <label class="field-label" for="saveNotes">Notas</label>
               <textarea id="saveNotes" class="field-input" rows="2"
-                        placeholder="Email asociado, observaciones…"></textarea>
+                        placeholder="Email asociado, observaciones..."></textarea>
             </div>
             <button class="btn btn-save btn-full" id="btnSave" disabled>
-              <span class="btn-icon">💾</span> Guardar contraseña
+              <svg class="btn-svg" viewBox="0 0 16 16" fill="none">
+                <path d="M13 13H3a1 1 0 0 1-1-1V4l3-3h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1z" stroke="currentColor" stroke-width="1.5"/>
+                <path d="M5 13V9h6v4M5 1v4h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              Guardar contrasena
             </button>
           </div>
 
-        </div><!-- /gen-layout -->
+        </div>
       </section>
 
-      <!-- ── VAULT ── -->
+      <!-- VAULT -->
       <section class="page" id="page-vault">
         <header class="page-header">
           <div>
-            <h1 class="page-title">Bóveda</h1>
-            <p class="page-sub">Tus contraseñas guardadas</p>
+            <h1 class="page-title">Boveda</h1>
+            <p class="page-sub">Tus contrasenas guardadas</p>
           </div>
         </header>
 
         <div class="vault-toolbar">
           <div class="search-wrap">
-            <span class="search-ico">🔍</span>
+            <svg class="search-ico" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
             <input type="text" id="searchInput" class="search-input"
-                   placeholder="Buscar por nombre o categoría…" autocomplete="off">
-            <button class="search-clear" id="searchClear" hidden>×</button>
+                   placeholder="Buscar por nombre o categoria..." autocomplete="off">
+            <button class="search-clear" id="searchClear" hidden>
+              <svg viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </button>
           </div>
           <select id="filterCat" class="field-input filter-select">
-            <option value="">Todas las categorías</option>
-            <option value="General">🌐 General</option>
-            <option value="Trabajo">💼 Trabajo</option>
-            <option value="Social">📱 Redes sociales</option>
-            <option value="Finanzas">💳 Finanzas</option>
-            <option value="Entretenimiento">🎮 Entretenimiento</option>
-            <option value="Educacion">📚 Educación</option>
-            <option value="Otro">🔑 Otro</option>
+            <option value="">Todas las categorias</option>
+            <option value="General">General</option>
+            <option value="Trabajo">Trabajo</option>
+            <option value="Social">Redes sociales</option>
+            <option value="Finanzas">Finanzas</option>
+            <option value="Entretenimiento">Entretenimiento</option>
+            <option value="Educacion">Educacion</option>
+            <option value="Otro">Otro</option>
           </select>
           <select id="sortBy" class="field-input filter-select">
-            <option value="date">Más reciente</option>
-            <option value="name">Nombre A–Z</option>
-            <option value="strength">Más fuerte</option>
+            <option value="date">Mas reciente</option>
+            <option value="name">Nombre A-Z</option>
+            <option value="strength">Mas fuerte</option>
           </select>
         </div>
 
-        <div class="vault-list" id="vaultList">
-          <!-- filled by JS -->
-        </div>
+        <div class="vault-list" id="vaultList"></div>
       </section>
 
-      <!-- ── STATS ── -->
+      <!-- STATS -->
       <section class="page" id="page-stats">
         <header class="page-header">
           <div>
-            <h1 class="page-title">Estadísticas</h1>
-            <p class="page-sub">Análisis de tu bóveda</p>
+            <h1 class="page-title">Estadisticas</h1>
+            <p class="page-sub">Analisis de tu boveda</p>
           </div>
         </header>
 
         <div class="stats-grid">
           <div class="stat-card accent">
-            <div class="stat-icon">🔑</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2C8.134 2 5 5.134 5 9v1H4a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V9c0-3.866-3.134-7-7-7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="16" r="2" fill="currentColor"/></svg>
+            </div>
             <div class="stat-val" id="sTotalPwds">0</div>
             <div class="stat-name">Total guardadas</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">🛡️</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3L4 7v5c0 4.418 3.582 8 8 9 4.418-1 8-4.582 8-9V7L12 3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
             <div class="stat-val" id="sStrongPwds">0</div>
-            <div class="stat-name">Contraseñas fuertes</div>
+            <div class="stat-name">Contrasenas fuertes</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">⚠️</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
             <div class="stat-val" id="sWeakPwds">0</div>
-            <div class="stat-name">Contraseñas débiles</div>
+            <div class="stat-name">Contrasenas debiles</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📁</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h18M3 17h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </div>
             <div class="stat-val" id="sCats">0</div>
-            <div class="stat-name">Categorías usadas</div>
+            <div class="stat-name">Categorias usadas</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">📏</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 12h16M4 6l16 6-16 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
             <div class="stat-val" id="sAvgLen">0</div>
             <div class="stat-name">Longitud promedio</div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">🏆</div>
+            <div class="stat-icon">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 2l2.9 6.3L22 9.3l-5 4.9 1.2 6.8L12 18l-6.2 3 1.2-6.8-5-4.9 7.1-1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+            </div>
             <div class="stat-val" id="sAvgStr">0%</div>
             <div class="stat-name">Fortaleza promedio</div>
           </div>
         </div>
 
         <div class="panel" style="margin-top:28px;">
-          <div class="panel-label">Distribución por categoría</div>
+          <div class="panel-label">Distribucion por categoria</div>
           <div class="cat-bars" id="catBars">
-            <p class="empty-hint">Aún no tienes contraseñas guardadas.</p>
+            <p class="empty-hint">Aun no tienes contrasenas guardadas.</p>
           </div>
         </div>
 
         <div class="panel" style="margin-top:20px;">
-          <div class="panel-label">Distribución de fortaleza</div>
+          <div class="panel-label">Distribucion de fortaleza</div>
           <div class="strength-dist" id="strengthDist"></div>
         </div>
       </section>
 
-    </main><!-- /main -->
-  </div><!-- /shell -->
+    </main>
+  </div>
 
   <script src="app.js"></script>
 </body>
