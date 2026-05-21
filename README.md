@@ -1,10 +1,10 @@
-# 🔐 PassForge — Gestor de Contraseñas
+# PassForge — Gestor de Contraseñas
 
 Aplicación web completa con **backend en Java (Spring Boot)** y frontend moderno.
 
 ---
 
-## 📁 Estructura del proyecto
+## Estructura del proyecto
 
 ```
 password-manager/
@@ -25,7 +25,7 @@ password-manager/
 
 ---
 
-## 🚀 Cómo ejecutar
+##  Cómo ejecutar
 
 ### Requisitos
 - Java 17+
@@ -48,12 +48,12 @@ El servidor arranca en **http://localhost:8080**
 Abre `frontend/index.html` directamente en tu navegador.
 
 El frontend detecta automáticamente si el backend está activo:
-- ✅ **Con backend**: guarda en base de datos H2 real.
-- 🔶 **Sin backend**: modo local usando `localStorage` del navegador.
+-  **Con backend**: guarda en base de datos H2 real.
+-  **Sin backend**: modo local usando `localStorage` del navegador.
 
 ---
 
-## 🔌 API REST (endpoints)
+##  API REST (endpoints)
 
 | Método | Ruta                         | Descripción                             |
 |--------|------------------------------|-----------------------------------------|
@@ -84,7 +84,7 @@ curl -X POST http://localhost:8080/api/passwords/generate \
 
 ---
 
-## 🔒 Seguridad
+##  Seguridad
 
 - Se usa `SecureRandom` para generación criptográficamente segura.
 - Cada contraseña garantiza al menos un carácter de cada tipo seleccionado.
@@ -92,7 +92,7 @@ curl -X POST http://localhost:8080/api/passwords/generate \
 
 ---
 
-## 🛠️ Producción
+##  Producción
 
 Para producción, reemplaza la BD H2 por PostgreSQL/MySQL en `application.properties`:
 
